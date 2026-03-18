@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AR Model Viewer</title>
+  <title>AR Viewer</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
@@ -16,7 +16,6 @@
       --text: #e8e4dc;
       --muted: rgba(232,228,220,0.4);
       --accent: #c8f542;
-      --accent-dim: rgba(200,245,66,0.12);
     }
 
     html, body {
@@ -27,16 +26,23 @@
       overflow: hidden;
     }
 
+    /* ── Layout ── */
+    .page {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+    }
+
     /* ── Top bar ── */
     header {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 10;
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 16px 20px;
-      background: linear-gradient(to bottom, rgba(13,13,13,0.95) 60%, transparent);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      z-index: 10;
     }
 
     .logo {
@@ -57,119 +63,36 @@
 
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.75); }
+      50%       { opacity: 0.4; transform: scale(0.7); }
     }
 
-    /* ── Model viewer ── */
+    /* ── Model viewer — takes remaining space ── */
     model-viewer {
-      width: 100vw;
-      height: 100dvh;
+      flex: 1;
+      width: 100%;
       background-color: var(--bg);
       --poster-color: var(--bg);
     }
 
-    /* ── Loading overlay ── */
-    .loader {
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-      z-index: 100;
-      transition: opacity 0.6s ease, visibility 0.6s ease;
-    }
-
-    .loader.hidden {
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    .loader-ring {
-      width: 48px; height: 48px;
-      border: 1.5px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .loader-text {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      color: var(--muted);
-      text-transform: uppercase;
-    }
+    /* hide the default model-viewer AR button entirely */
+    model-viewer::part(default-ar-button) { display: none; }
 
     /* ── Bottom panel ── */
     .bottom-panel {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      z-index: 10;
-      padding: 0 20px 36px;
-      background: linear-gradient(to top, rgba(13,13,13,0.97) 60%, transparent);
+      flex-shrink: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 18px 20px 32px;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 14px;
     }
 
-    /* ── AR button ── */
-    #ar-button {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--accent);
-      color: #0d0d0d;
-      border: none;
-      padding: 15px 32px;
-      border-radius: 2px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      letter-spacing: 0.04em;
-      cursor: pointer;
-      width: 100%;
-      max-width: 360px;
-      justify-content: center;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-      box-shadow: 0 0 28px rgba(200,245,66,0.2);
-    }
-
-    #ar-button:active {
-      transform: scale(0.97);
-    }
-
-    #ar-button svg {
-      width: 18px; height: 18px;
-      flex-shrink: 0;
-    }
-
-    /* hide button if AR not available */
-    #ar-button[hidden] { display: none; }
-
-    /* ── Hint text ── */
-    .hint {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-      text-transform: uppercase;
-      text-align: center;
-    }
-
-    /* ── Instructions card (shown before AR launch) ── */
+    /* ── Instructions ── */
     .instructions {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 14px 18px;
       width: 100%;
-      max-width: 360px;
+      max-width: 400px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -188,7 +111,7 @@
       counter-reset: steps;
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 6px;
     }
 
     .instructions li {
@@ -198,7 +121,7 @@
       gap: 10px;
       font-size: 12px;
       color: var(--muted);
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
     .instructions li::before {
@@ -208,6 +131,86 @@
       color: var(--accent);
       flex-shrink: 0;
       margin-top: 2px;
+    }
+
+    /* ── AR button ── */
+    #ar-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: var(--accent);
+      color: #0d0d0d;
+      border: none;
+      padding: 15px 32px;
+      border-radius: 2px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      width: 100%;
+      max-width: 400px;
+      transition: transform 0.12s ease, opacity 0.12s ease;
+      box-shadow: 0 0 28px rgba(200,245,66,0.18);
+    }
+
+    #ar-button:active { transform: scale(0.97); opacity: 0.85; }
+
+    #ar-button svg {
+      width: 18px; height: 18px;
+      flex-shrink: 0;
+    }
+
+    #ar-button.unavailable {
+      background: var(--border);
+      color: var(--muted);
+      box-shadow: none;
+      cursor: not-allowed;
+      font-size: 12px;
+    }
+
+    .hint {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    /* ── Loading overlay ── */
+    .loader {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      z-index: 100;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .loader.hidden { opacity: 0; visibility: hidden; }
+
+    .loader-ring {
+      width: 44px; height: 44px;
+      border: 1.5px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loader-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      text-transform: uppercase;
     }
   </style>
 </head>
@@ -219,71 +222,92 @@
     <span class="loader-text">Loading model</span>
   </div>
 
-  <!-- Top bar -->
-  <header>
-    <span class="logo">AR Viewer</span>
-    <div class="status-dot"></div>
-  </header>
+  <div class="page">
 
-  <!-- Model Viewer -->
-  <!--
-    ⚠️  EDIT THESE TWO LINES:
-        src        → your .glb filename  (e.g. src="pavilion.glb")
-        ios-src    → your .usdz filename (e.g. ios-src="pavilion.usdz")
-  -->
-  <model-viewer
-    id="viewer"
-    src="your-model.glb"
-    ios-src="your-model.usdz"
-    ar
-    ar-modes="webxr scene-viewer quick-look"
-    ar-scale="fixed"
-    camera-controls
-    auto-rotate
-    auto-rotate-delay="1000"
-    rotation-per-second="20deg"
-    shadow-intensity="1.2"
-    shadow-softness="0.8"
-    environment-image="neutral"
-    exposure="0.9">
+    <!-- Top bar -->
+    <header>
+      <span class="logo">AR Viewer</span>
+      <div class="status-dot"></div>
+    </header>
 
-    <!-- AR button slot — rendered inside model-viewer -->
-    <button slot="ar-button" id="ar-button">
-      <!-- camera icon -->
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-        <circle cx="12" cy="13" r="4"/>
-      </svg>
-      Place in your space
-    </button>
+    <!--
+      ╔══════════════════════════════════════╗
+      ║  EDIT THESE TWO LINES WITH YOUR      ║
+      ║  ACTUAL FILENAMES:                   ║
+      ║  src="your-model.glb"                ║
+      ║  ios-src="your-model.usdz"           ║
+      ╚══════════════════════════════════════╝
+    -->
+    <model-viewer
+      id="viewer"
+      src="your-model.glb"
+      ios-src="your-model.usdz"
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      ar-scale="fixed"
+      camera-controls
+      auto-rotate
+      auto-rotate-delay="800"
+      rotation-per-second="18deg"
+      shadow-intensity="1.2"
+      shadow-softness="0.8"
+      environment-image="neutral"
+      exposure="0.9">
+    </model-viewer>
 
-  </model-viewer>
+    <!-- Bottom panel -->
+    <div class="bottom-panel">
 
-  <!-- Bottom panel -->
-  <div class="bottom-panel">
-    <div class="instructions">
-      <span class="instructions-title">How to use</span>
-      <ol>
-        <li>Rotate and preview the model above</li>
-        <li>Tap the button below to open your camera</li>
-        <li>Slowly move your phone to detect a flat surface</li>
-        <li>Tap where you want to place the model</li>
-      </ol>
+      <div class="instructions">
+        <span class="instructions-title">How to use</span>
+        <ol>
+          <li>Preview and rotate the model above</li>
+          <li>Tap the button below to open your camera</li>
+          <li>Slowly move your phone — it will detect a flat surface</li>
+          <li>Tap the surface where you want to place the model</li>
+        </ol>
+      </div>
+
+      <button id="ar-button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8
+                   a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        Place in your space
+      </button>
+
+      <span class="hint" id="hint-text">Works on iOS &amp; Android — no app needed</span>
+
     </div>
-    <span class="hint">Works on iOS &amp; Android — no app needed</span>
   </div>
 
   <script>
-    const viewer = document.getElementById('viewer');
-    const loader = document.getElementById('loader');
+    const viewer   = document.getElementById('viewer');
+    const arBtn    = document.getElementById('ar-button');
+    const loader   = document.getElementById('loader');
+    const hintText = document.getElementById('hint-text');
 
     // Hide loader once model is ready
+    viewer.addEventListener('load', () => loader.classList.add('hidden'));
+    setTimeout(() => loader.classList.add('hidden'), 7000); // fallback
+
+    // Check AR support after model loads
     viewer.addEventListener('load', () => {
-      loader.classList.add('hidden');
+      if (!viewer.canActivateAR) {
+        arBtn.classList.add('unavailable');
+        arBtn.innerHTML = 'AR not available on this device';
+        hintText.textContent = 'AR requires iOS 12+ or an ARCore-supported Android';
+      }
     });
 
-    // Fallback: hide loader after 6s even if event doesn't fire
-    setTimeout(() => loader.classList.add('hidden'), 6000);
+    // Our button calls model-viewer's built-in AR activation
+    arBtn.addEventListener('click', () => {
+      if (viewer.canActivateAR) {
+        viewer.activateAR();
+      }
+    });
   </script>
 
 </body>
